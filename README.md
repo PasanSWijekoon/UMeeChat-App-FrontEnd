@@ -33,7 +33,7 @@ UMeeChat is a real-time chat application designed for seamless communication bet
 
 ### Steps to Install
 
-1. **Clone the repository:**
+1. **Clone the repository :**
    ```bash
    git clone https://github.com/yourusername/umeechat-frontend.git
    ```
