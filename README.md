@@ -2,6 +2,8 @@
 
 # UMeeChat - Frontend (React Native)
 
+Please Give a Star
+
 ## Overview
 
 UMeeChat is a real-time chat application designed for seamless communication between users. The frontend of UMeeChat is built using **React Native** to provide a cross-platform mobile experience. It includes user authentication, real-time messaging, and profile management features. The frontend interacts with the backend (Java EE + Hibernate) through REST APIs.
