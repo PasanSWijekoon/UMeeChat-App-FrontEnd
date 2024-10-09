@@ -1,3 +1,4 @@
+// Import necessary components and libraries from React Native and Expo.
 import {
   SafeAreaView,
   View,
@@ -9,125 +10,153 @@ import {
   Pressable,
   Alert,
 } from "react-native";
+
+// Import custom font loading hook from Expo and other utility libraries.
 import { useFonts } from "expo-font";
 import { useEffect, useState } from "react";
+
+// Import FontAwesome icons from Expo for UI elements.
 import { FontAwesome6, FontAwesome } from "@expo/vector-icons";
+
+// Import image component and related utilities.
 import { Image } from "expo-image";
+
+// Import splash screen and image picker libraries for loading and media functionalities.
 import * as SplashScreen from "expo-splash-screen";
 import * as ImagePicker from "expo-image-picker";
+
+// Import AsyncStorage for persistent local storage.
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+// Import router from Expo for navigation between screens.
 import { router } from "expo-router";
 
+// Prevent the splash screen from automatically hiding until the app is fully ready.
 SplashScreen.preventAutoHideAsync();
 
+// Load the logo image used in the login screen.
 const logoImagePath = require("../assets/image/logo.png");
 
+// Main component of the screen.
 export default function index() {
+  // State to track whether custom fonts are loaded or if there's an error.
   const [loaded, error] = useFonts({
     "NotoSans-Italic-VariableFont_wdth,wght": require("../assets/fonts/NotoSans-Italic-VariableFont_wdth,wght.ttf"),
     "Poppins-Bold": require("../assets/fonts/Poppins-Bold.ttf"),
     "Poppins-Light": require("../assets/fonts/Poppins-Light.ttf"),
   });
 
+  // States to handle input fields for mobile, password, and name.
   const [getMobile, setMobile] = useState("");
   const [getPassword, setPassword] = useState("");
   const [getName, setName] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false); // Track submission state
 
+  // State to manage submission status to prevent multiple submissions.
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+
+   //   useEffect(
+    //     ()=>{
+    //         async function checkdata() {
+    //             let userJson = await AsyncStorage.getItem("user");
   
-
-  //   useEffect(
-  //     ()=>{
-  //         async function checkdata() {
-  //             let userJson = await AsyncStorage.getItem("user");
-
-  //             try {
-
-  //                 if (userJson != null) {
-  //                     router.replace("/home");
-
-  //                 }
-  //             } catch (error) {
-
-  //             }
-  //         }
-  //         checkdata();
-  //     }
-  //   );
-
+    //             try {
+  
+    //                 if (userJson != null) {
+    //                     router.replace("/home");
+  
+    //                 }
+    //             } catch (error) {
+  
+    //             }
+    //         }
+    //         checkdata();
+    //     }
+    //   );
+  
+    
+  // useEffect hook to check if the fonts are loaded or there's an error, and then hide the splash screen.
   useEffect(() => {
     if (loaded || error) {
       SplashScreen.hideAsync();
     }
   }, [loaded, error]);
 
+  // If fonts are still loading or there's an error, render nothing.
   if (!loaded && !error) {
     return null;
   }
-  const handleSignIn = async () => {
-    if (isSubmitting) return; // Prevent multiple requests
 
-    setIsSubmitting(true); // Start submission
+  // Function to handle user sign-in when the "Sign In" button is pressed.
+  const handleSignIn = async () => {
+    if (isSubmitting) return; // Prevent multiple requests while already submitting.
+
+    setIsSubmitting(true); // Mark that submission is in progress.
 
     try {
+      // Send a POST request to the sign-in API.
       let response = await fetch(
         "http://192.168.1.5:8080/Umee_Chat_App/SignIn",
         {
           method: "POST",
           body: JSON.stringify({
-              mobile:getMobile,
-              password:getPassword,
+              mobile: getMobile,
+              password: getPassword,
           }),
-
-          headers:{
-            "Content-Type" : "application/json"
-          }
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
 
+      // If the response is successful, process the result.
       if (response.ok) {
         let json = await response.json();
         if(json.success){
-          //user registration complete 
+          // If user login is successful, store the user data locally.
           let user = json.user;
           try {
             await AsyncStorage.setItem("user", JSON.stringify(user));
-
-            router.replace("/home");
+            router.replace("/home"); // Redirect to home page.
           } catch (error) {
-            Alert.alert("Error", "Unable to proccess your message");
+            Alert.alert("Error", "Unable to process your request.");
           }
-            
-        }else{
-          
-        Alert.alert("Error", json.message);
+        } else {
+          // Display an error if login failed.
+          Alert.alert("Error", json.message);
         }
       } 
     } catch (error) {
       Alert.alert("Error", "Something went wrong. Please try again.");
     } finally {
-      setIsSubmitting(false); // End submission
+      setIsSubmitting(false); // End submission after the request completes.
     }
   };
 
+  // Main UI of the login screen.
   return (
     <SafeAreaView style={stylesheet.view1}>
       <ScrollView style={stylesheet.scrollview1}>
         <View style={stylesheet.View3}>
+          {/* Display the logo image */}
           <Image
             source={logoImagePath}
             style={stylesheet.image1}
             contentFit={"contain"}
           />
 
+          {/* Display the login title and subtitle */}
           <Text style={stylesheet.text1}>Let's Log In</Text>
           <Text style={stylesheet.text2}>
             Hello! Welcome to UMee Chat. Please fill your details to Log In.
           </Text>
 
+          {/* Display the user's name */}
           <View style={stylesheet.button3}>
             <Text style={stylesheet.text5}>{getName}</Text>
           </View>
+
+          {/* Input field for the mobile number */}
           <Text style={stylesheet.text3}>Mobile</Text>
           <TextInput
             style={stylesheet.input1}
@@ -147,12 +176,13 @@ export default function index() {
 
                 if (response.ok) {
                   let json = await response.json();
-                  setName(json.letters);
+                  setName(json.letters); // Set name based on the mobile number response.
                 }
               }
             }}
           />
 
+          {/* Input field for the password */}
           <Text style={stylesheet.text3}>Password</Text>
           <TextInput
             style={stylesheet.input1}
@@ -165,34 +195,37 @@ export default function index() {
             }}
           />
 
+          {/* Button to trigger the sign-in process */}
           <Pressable
               style={[
                 stylesheet.button1,
-                isSubmitting && { backgroundColor: "#ccc" }, // Disable button styling
+                isSubmitting && { backgroundColor: "#ccc" }, // Change button style when submitting.
               ]}
               onPress={handleSignIn}
-              disabled={isSubmitting} // Disable button when submitting
+              disabled={isSubmitting} // Disable button while submitting.
             >
               <FontAwesome6 name={"paper-plane"} color={"white"} size={20} />
               <Text style={stylesheet.buttonText1}>Sign In</Text>
             </Pressable>
 
-            <Pressable
-              style={stylesheet.button2}
-              onPress={() => {
-                router.replace("/signup");
-              }}
-            >
-              <Text style={stylesheet.buttonText2}>
-                New User ? Go to Sign Up
-              </Text>
-            </Pressable>
+          {/* Link to the sign-up page */}
+          <Pressable
+            style={stylesheet.button2}
+            onPress={() => {
+              router.replace("/signup");
+            }}
+          >
+            <Text style={stylesheet.buttonText2}>
+              New User ? Go to Sign Up
+            </Text>
+          </Pressable>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+// Stylesheet for the UI components.
 const stylesheet = StyleSheet.create({
   view1: {
     flex: 1,
