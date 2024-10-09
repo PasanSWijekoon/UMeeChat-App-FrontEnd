@@ -1,5 +1,3 @@
-Here’s the **README** file for the **UMeeChat frontend** (React Native):
-
 ---
 
 # UMeeChat - Frontend (React Native)
@@ -110,3 +108,18 @@ Here are the key API endpoints that the frontend communicates with:
 - **Axios**: Library for making HTTP requests.
 - **AsyncStorage**: For storing user sessions locally.
 - **FlashList**: Optimized list component for rendering chat messages.
+
+## UI
+
+### Sign In Screen 
+![Sign In](https://github.com/PasanSWijekoon/UMeeChat-App-FrontEnd/blob/main/assets/image/1%20(3).jpeg?raw=true)
+
+### Sign Up Screen 
+![Sign In](https://github.com/PasanSWijekoon/UMeeChat-App-FrontEnd/blob/main/assets/image/1%20(4).jpeg?raw=true)
+
+### Home Screen 
+![Sign In](https://github.com/PasanSWijekoon/UMeeChat-App-FrontEnd/blob/main/assets/image/1%20(1).jpeg?raw=true)
+
+### Chat Screen 
+![Sign In](https://github.com/PasanSWijekoon/UMeeChat-App-FrontEnd/blob/main/assets/image/1%20(2).jpeg?raw=true)
+
