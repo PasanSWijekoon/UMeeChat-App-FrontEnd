@@ -111,6 +111,6 @@ Here are the key API endpoints that the frontend communicates with:
 
 ## UI
 
-** Sign IN 
+### Sign IN 
 ![Sign In](https://github.com/PasanSWijekoon/UMeeChat-App-FrontEnd/blob/main/assets/image/1%20(3).jpeg?raw=true)
 
