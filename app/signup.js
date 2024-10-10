@@ -32,7 +32,9 @@ export default function signup() {
 
   const [getMobile, setMobile] = useState("");
   const [getFirstName, setFirstName] = useState("");
+  const [getFirstNameWarning, setFirstNameWarning] = useState("");
   const [getLastName, setLastName] = useState("");
+  const [getLastNameWarning, setLastNameWarning] = useState("");
   const [getPassword, setPassword] = useState("");
   const [passwordWarning, setPasswordWarning] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false); // Track submission state
@@ -68,6 +70,7 @@ export default function signup() {
 
   const handleSignUp = async () => {
     if (isSubmitting) return; // Prevent multiple requests
+
 
     let f = new FormData();
 
@@ -167,6 +170,7 @@ export default function signup() {
             }}
           />
 
+          <View>
           <Text style={stylesheet.text3}>First Name</Text>
           <TextInput
             style={stylesheet.input1}
@@ -177,7 +181,12 @@ export default function signup() {
               setFirstName(text);
             }}
           />
+          {getFirstNameWarning ? (
+              <Text style={{ color: 'red', marginTop: 1 }}>{getFirstNameWarning}</Text>
+            ) : null}
+          </View>
 
+          <View>
           <Text style={stylesheet.text3}>Last Name</Text>
           <TextInput
             style={stylesheet.input1}
@@ -188,6 +197,10 @@ export default function signup() {
               setLastName(text);
             }}
           />
+          {getLastNameWarning ? (
+              <Text style={{ color: 'red', marginTop: 1 }}>{getLastNameWarning}</Text>
+            ) : null}
+          </View>
 
           <View>
             <Text style={stylesheet.text3}>Password</Text>
