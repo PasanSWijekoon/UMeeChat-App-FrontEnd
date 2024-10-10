@@ -16,6 +16,8 @@ import { Image } from 'expo-image';
 import { SplashScreen, useLocalSearchParams } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
 import { FontAwesome } from '@expo/vector-icons';
+import * as env from 'dotenv';
+env.config();
 
 SplashScreen.preventAutoHideAsync();
 
@@ -43,7 +45,7 @@ export default function Chat() {
         const userJson = await AsyncStorage.getItem('user');
         const user = JSON.parse(userJson);
         const response = await fetch(
-          `http://192.168.1.5:8080/Umee_Chat_App/LoadChat?logged_user_id=${user.id}&other_user_id=${item.other_user_id}`
+          `${process.env.BACKEND_API}/LoadChat?logged_user_id=${user.id}&other_user_id=${item.other_user_id}`
         );
         if (response.ok) {
           const chatArray = await response.json();
@@ -80,7 +82,7 @@ export default function Chat() {
       const userJson = await AsyncStorage.getItem('user');
       const user = JSON.parse(userJson);
       const response = await fetch(
-        `http://192.168.1.5:8080/Umee_Chat_App/SendChat?logged_user_id=${user.id}&other_user_id=${item.other_user_id}&message=${encodeURIComponent(chatText)}`
+        `${process.env.BACKEND_API}/SendChat?logged_user_id=${user.id}&other_user_id=${item.other_user_id}&message=${encodeURIComponent(chatText)}`
       );
 
       if (response.ok) {
@@ -140,7 +142,7 @@ export default function Chat() {
           {item.avatar_image_found === 'true' ? (
             <Image
               style={styles.avatar}
-              source={`http://192.168.1.5:8080/Umee_Chat_App/AvatarImages/${item.other_user_mobile}.jpg`}
+              source={`${process.env.BACKEND_API}/AvatarImages/${item.other_user_mobile}.jpg`}
               contentFit="cover"
             />
           ) : (

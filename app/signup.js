@@ -16,6 +16,8 @@ import { FontAwesome6 } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
+import * as env from 'dotenv';
+env.config();
 
 SplashScreen.preventAutoHideAsync();
 
@@ -68,7 +70,7 @@ export default function signup() {
 
     try {
       let response = await fetch(
-        "http://192.168.1.5:8080/Umee_Chat_App/SignUp",
+        process.env.BACKEND_API + "/SignUp",
         {
           method: "POST",
           body: f,

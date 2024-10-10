@@ -10,6 +10,8 @@ import {
   Pressable,
   Alert,
 } from "react-native";
+import * as env from 'dotenv';
+env.config();
 
 // Import custom font loading hook from Expo and other utility libraries.
 import { useFonts } from "expo-font";
@@ -55,26 +57,26 @@ export default function index() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
 
-   //   useEffect(
-    //     ()=>{
-    //         async function checkdata() {
-    //             let userJson = await AsyncStorage.getItem("user");
-  
-    //             try {
-  
-    //                 if (userJson != null) {
-    //                     router.replace("/home");
-  
-    //                 }
-    //             } catch (error) {
-  
-    //             }
-    //         }
-    //         checkdata();
-    //     }
-    //   );
-  
-    
+  //   useEffect(
+  //     ()=>{
+  //         async function checkdata() {
+  //             let userJson = await AsyncStorage.getItem("user");
+
+  //             try {
+
+  //                 if (userJson != null) {
+  //                     router.replace("/home");
+
+  //                 }
+  //             } catch (error) {
+
+  //             }
+  //         }
+  //         checkdata();
+  //     }
+  //   );
+
+
   // useEffect hook to check if the fonts are loaded or there's an error, and then hide the splash screen.
   useEffect(() => {
     if (loaded || error) {
@@ -96,12 +98,12 @@ export default function index() {
     try {
       // Send a POST request to the sign-in API.
       let response = await fetch(
-        "http://192.168.1.5:8080/Umee_Chat_App/SignIn",
+        process.env.BACKEND_API + "/SignIn",
         {
           method: "POST",
           body: JSON.stringify({
-              mobile: getMobile,
-              password: getPassword,
+            mobile: getMobile,
+            password: getPassword,
           }),
           headers: {
             "Content-Type": "application/json",
@@ -125,7 +127,7 @@ export default function index() {
           // Display an error if login failed.
           Alert.alert("Error", json.message);
         }
-      } 
+      }
     } catch (error) {
       Alert.alert("Error", "Something went wrong. Please try again.");
     } finally {
@@ -170,8 +172,8 @@ export default function index() {
             onEndEditing={async () => {
               if (getMobile.length == 10) {
                 let response = await fetch(
-                  "http://192.168.1.5:8080/Umee_Chat_App/GetLetters?mobile=" +
-                    getMobile
+                  process.env.BACKEND_API + "/GetLetters?mobile=" +
+                  getMobile
                 );
 
                 if (response.ok) {
@@ -197,16 +199,16 @@ export default function index() {
 
           {/* Button to trigger the sign-in process */}
           <Pressable
-              style={[
-                stylesheet.button1,
-                isSubmitting && { backgroundColor: "#ccc" }, // Change button style when submitting.
-              ]}
-              onPress={handleSignIn}
-              disabled={isSubmitting} // Disable button while submitting.
-            >
-              <FontAwesome6 name={"paper-plane"} color={"white"} size={20} />
-              <Text style={stylesheet.buttonText1}>Sign In</Text>
-            </Pressable>
+            style={[
+              stylesheet.button1,
+              isSubmitting && { backgroundColor: "#ccc" }, // Change button style when submitting.
+            ]}
+            onPress={handleSignIn}
+            disabled={isSubmitting} // Disable button while submitting.
+          >
+            <FontAwesome6 name={"paper-plane"} color={"white"} size={20} />
+            <Text style={stylesheet.buttonText1}>Sign In</Text>
+          </Pressable>
 
           {/* Link to the sign-up page */}
           <Pressable
