@@ -36,6 +36,7 @@ export default function signup() {
   const [getLastName, setLastName] = useState("");
   const [getLastNameWarning, setLastNameWarning] = useState("");
   const [getPassword, setPassword] = useState("");
+  const [passwordWarning, setPasswordWarning] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false); // Track submission state
 
   useEffect(() => {
@@ -48,20 +49,28 @@ export default function signup() {
     return null;
   }
 
+  const validatePassword = () => {
+    let newSuggestions = [];
+    if (getPassword.length < 8) {
+      return 'Password should be at least 8 characters long'
+    }
+    if (!/\d/.test(getPassword)) {
+      return ('Add at least one number')
+    }
+
+    if (!/[A-Z]/.test(getPassword) || !/[a-z]/.test(getPassword)) {
+      return ('Include both upper and lower case letters')
+    }
+
+    if (!/[^A-Za-z0-9]/.test(getPassword)) {
+      return ('Include at least one special character')
+    }
+    return '';
+  }
+
   const handleSignUp = async () => {
     if (isSubmitting) return; // Prevent multiple requests
 
-    if(getFirstName == '') {
-      setFirstNameWarning('Required field.');
-      return;
-    }
-
-    if(getLastName == '') {
-      setLastNameWarning('Required field.');
-      return;
-    }
-
-    setIsSubmitting(true); // Start submission
 
     let f = new FormData();
 
@@ -77,6 +86,13 @@ export default function signup() {
         uri: getImage,
       });
     }
+
+    if (validatePassword()) {
+      setPasswordWarning(validatePassword())
+      return;
+    }
+
+    setIsSubmitting(true); // Start submission
 
     try {
       let response = await fetch(
@@ -186,17 +202,23 @@ export default function signup() {
             ) : null}
           </View>
 
-          <Text style={stylesheet.text3}>Password</Text>
-          <TextInput
-            style={stylesheet.input1}
-            placeholderTextColor={"black"}
-            placeholder="Enter Password"
-            secureTextEntry={true}
-            inputMode={"text"}
-            onChangeText={(text) => {
-              setPassword(text);
-            }}
-          />
+          <View>
+            <Text style={stylesheet.text3}>Password</Text>
+            <TextInput
+              style={stylesheet.input1}
+              placeholderTextColor={"black"}
+              placeholder="Enter Password"
+              secureTextEntry={true}
+              inputMode={"text"}
+              onChangeText={(text) => {
+                setPassword(text);
+                setPasswordWarning('');
+              }}
+            />
+            {passwordWarning ? (
+              <Text style={{ color: 'red', marginTop: 5 }}>{passwordWarning}</Text>
+            ) : null}
+          </View>
 
           <Pressable
             style={[

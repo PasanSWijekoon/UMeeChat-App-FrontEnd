@@ -49,6 +49,7 @@ export default function index() {
   // States to handle input fields for mobile, password, and name.
   const [getMobile, setMobile] = useState("");
   const [getPassword, setPassword] = useState("");
+  const [passwordWarning, setPasswordWarning] = useState('');
   const [getName, setName] = useState("");
 
   // State to manage submission status to prevent multiple submissions.
@@ -87,9 +88,33 @@ export default function index() {
     return null;
   }
 
+  const validatePassword = () => {
+    let newSuggestions = [];
+    if (getPassword.length < 8) {
+        return 'Password should be at least 8 characters long'
+    }
+    if (!/\d/.test(getPassword)) {
+        return ('Add at least one number')
+    }
+
+    if (!/[A-Z]/.test(getPassword) || !/[a-z]/.test(getPassword)) {
+        return ('Include both upper and lower case letters')
+    }
+
+    if (!/[^A-Za-z0-9]/.test(getPassword)) {
+        return ('Include at least one special character')
+    }
+    return '';
+}
+
   // Function to handle user sign-in when the "Sign In" button is pressed.
   const handleSignIn = async () => {
     if (isSubmitting) return; // Prevent multiple requests while already submitting.
+
+    if (validatePassword()) {
+      setPasswordWarning(validatePassword())
+      return;
+    }
 
     setIsSubmitting(true); // Mark that submission is in progress.
 
@@ -183,6 +208,7 @@ export default function index() {
           />
 
           {/* Input field for the password */}
+          <View>
           <Text style={stylesheet.text3}>Password</Text>
           <TextInput
             style={stylesheet.input1}
@@ -192,8 +218,13 @@ export default function index() {
             inputMode={"text"}
             onChangeText={(text) => {
               setPassword(text);
+              setPasswordWarning('');
             }}
           />
+          {passwordWarning ? (
+              <Text style={{ color: 'red', marginTop: 5 }}>{passwordWarning}</Text>
+            ) : null}
+          </View>
 
           {/* Button to trigger the sign-in process */}
           <Pressable
