@@ -8,6 +8,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ActivityIndicator
 } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
@@ -171,33 +172,33 @@ export default function signup() {
           />
 
           <View>
-          <Text style={stylesheet.text3}>First Name</Text>
-          <TextInput
-            style={stylesheet.input1}
-            placeholderTextColor={"black"}
-            placeholder="Enter First Name"
-            inputMode={"text"}
-            onChangeText={(text) => {
-              setFirstName(text);
-            }}
-          />
-          {getFirstNameWarning ? (
+            <Text style={stylesheet.text3}>First Name</Text>
+            <TextInput
+              style={stylesheet.input1}
+              placeholderTextColor={"black"}
+              placeholder="Enter First Name"
+              inputMode={"text"}
+              onChangeText={(text) => {
+                setFirstName(text);
+              }}
+            />
+            {getFirstNameWarning ? (
               <Text style={{ color: 'red', marginTop: 1 }}>{getFirstNameWarning}</Text>
             ) : null}
           </View>
 
           <View>
-          <Text style={stylesheet.text3}>Last Name</Text>
-          <TextInput
-            style={stylesheet.input1}
-            placeholderTextColor={"black"}
-            placeholder="Enter Last Name"
-            inputMode={"text"}
-            onChangeText={(text) => {
-              setLastName(text);
-            }}
-          />
-          {getLastNameWarning ? (
+            <Text style={stylesheet.text3}>Last Name</Text>
+            <TextInput
+              style={stylesheet.input1}
+              placeholderTextColor={"black"}
+              placeholder="Enter Last Name"
+              inputMode={"text"}
+              onChangeText={(text) => {
+                setLastName(text);
+              }}
+            />
+            {getLastNameWarning ? (
               <Text style={{ color: 'red', marginTop: 1 }}>{getLastNameWarning}</Text>
             ) : null}
           </View>
@@ -223,13 +224,19 @@ export default function signup() {
           <Pressable
             style={[
               stylesheet.button1,
-              isSubmitting && { backgroundColor: "#ccc" }, // Disable button styling
+              isSubmitting && { backgroundColor: "#ccc" },
             ]}
             onPress={handleSignUp}
-            disabled={isSubmitting} // Disable button when submitting
+            disabled={isSubmitting}
           >
-            <FontAwesome6 name={"right-to-bracket"} color={"white"} size={20} />
-            <Text style={stylesheet.buttonText1}>Sign Up</Text>
+            {isSubmitting ? (
+              <ActivityIndicator size="small" color="white" /> // Show spinner
+            ) : (
+              <>
+                <FontAwesome6 name={"right-to-bracket"} color={"white"} size={20} />
+                <Text style={stylesheet.buttonText1}>Sign Up</Text>
+              </>
+            )}
           </Pressable>
 
           <Pressable
