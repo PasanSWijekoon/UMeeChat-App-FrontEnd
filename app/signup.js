@@ -49,6 +49,25 @@ export default function Signup() {
 
   const defaultImagePath = require("../assets/image/user.png");
   const [getImage, setImage] = React.useState(defaultImagePath);
+  
+   //   useEffect(
+  //     ()=>{
+  //         async function checkdata() {
+  //             let userJson = await AsyncStorage.getItem("user");
+
+  //             try {
+
+  //                 if (userJson != null) {
+  //                     router.replace("/home");
+
+  //                 }
+  //             } catch (error) {
+
+  //             }
+  //         }
+  //         checkdata();
+  //     }
+  //   );
 
   React.useEffect(() => {
     if (loaded || error) {
