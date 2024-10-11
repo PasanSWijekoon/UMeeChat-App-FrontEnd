@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Pressable,
   Alert,
+  ActivityIndicator
 } from "react-native";
 
 // Import custom font loading hook from Expo and other utility libraries.
@@ -226,18 +227,24 @@ export default function index() {
             ) : null}
           </View>
 
-          {/* Button to trigger the sign-in process */}
-          <Pressable
-              style={[
-                stylesheet.button1,
-                isSubmitting && { backgroundColor: "#ccc" }, // Change button style when submitting.
-              ]}
-              onPress={handleSignIn}
-              disabled={isSubmitting} // Disable button while submitting.
-            >
-              <FontAwesome6 name={"paper-plane"} color={"white"} size={20} />
-              <Text style={stylesheet.buttonText1}>Sign In</Text>
-            </Pressable>
+                 {/* Button to trigger the sign-in process */}
+                 <Pressable
+            style={[
+              stylesheet.button1,
+              isSubmitting && { backgroundColor: "#ccc" }, // Change button style when submitting.
+            ]}
+            onPress={handleSignIn}
+            disabled={isSubmitting} // Disable button while submitting.
+          >
+            {isSubmitting ? (
+              <ActivityIndicator color="white" /> // Show spinner when submitting
+            ) : (
+              <>
+                <FontAwesome6 name={"paper-plane"} color={"white"} size={20} />
+                <Text style={stylesheet.buttonText1}>Sign In</Text>
+              </>
+            )}
+          </Pressable>
 
           {/* Link to the sign-up page */}
           <Pressable
