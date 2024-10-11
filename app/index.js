@@ -1,4 +1,3 @@
-// Import necessary components and libraries from React Native and Expo.
 import {
   SafeAreaView,
   View,
@@ -9,125 +8,64 @@ import {
   TouchableOpacity,
   Pressable,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
 } from "react-native";
-
-// Import custom font loading hook from Expo and other utility libraries.
 import { useFonts } from "expo-font";
 import { useEffect, useState } from "react";
-
-// Import FontAwesome icons from Expo for UI elements.
-import { FontAwesome6, FontAwesome } from "@expo/vector-icons";
-
-// Import image component and related utilities.
+import { FontAwesome6 } from "@expo/vector-icons";
 import { Image } from "expo-image";
-
-// Import splash screen and image picker libraries for loading and media functionalities.
 import * as SplashScreen from "expo-splash-screen";
 import * as ImagePicker from "expo-image-picker";
-
-// Import AsyncStorage for persistent local storage.
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-// Import router from Expo for navigation between screens.
 import { router } from "expo-router";
+import { Formik } from "formik";
+import * as Yup from "yup";
 
-// Prevent the splash screen from automatically hiding until the app is fully ready.
 SplashScreen.preventAutoHideAsync();
-
-// Load the logo image used in the login screen.
 const logoImagePath = require("../assets/image/logo.png");
 
-// Main component of the screen.
+// Validation schema using Yup
+const validationSchema = Yup.object().shape({
+  mobile: Yup.string()
+    .matches(/^07[01245678]{1}[0-9]{7}$/, "Please enter a valid mobile number (starting with 07 and 10 digits)")
+    .required("Mobile number is required"),
+  password: Yup.string()
+    .min(8, "Password should be at least 8 characters long")
+    .matches(/\d/, "Password must contain at least one number")
+    .matches(/[A-Z]/, "Password must contain an uppercase letter")
+    .matches(/[a-z]/, "Password must contain a lowercase letter")
+    .matches(/[^A-Za-z0-9]/, "Password must contain a special character")
+    .required("Password is required"),
+});
+
 export default function index() {
-  // State to track whether custom fonts are loaded or if there's an error.
   const [loaded, error] = useFonts({
-    "NotoSans-Italic-VariableFont_wdth,wght": require("../assets/fonts/NotoSans-Italic-VariableFont_wdth,wght.ttf"),
     "Poppins-Bold": require("../assets/fonts/Poppins-Bold.ttf"),
     "Poppins-Light": require("../assets/fonts/Poppins-Light.ttf"),
   });
 
-  // States to handle input fields for mobile, password, and name.
-  const [getMobile, setMobile] = useState("");
-  const [getPassword, setPassword] = useState("");
-  const [passwordWarning, setPasswordWarning] = useState('');
   const [getName, setName] = useState("");
 
-  // State to manage submission status to prevent multiple submissions.
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-
-   //   useEffect(
-    //     ()=>{
-    //         async function checkdata() {
-    //             let userJson = await AsyncStorage.getItem("user");
-  
-    //             try {
-  
-    //                 if (userJson != null) {
-    //                     router.replace("/home");
-  
-    //                 }
-    //             } catch (error) {
-  
-    //             }
-    //         }
-    //         checkdata();
-    //     }
-    //   );
-  
-    
-  // useEffect hook to check if the fonts are loaded or there's an error, and then hide the splash screen.
   useEffect(() => {
     if (loaded || error) {
       SplashScreen.hideAsync();
     }
   }, [loaded, error]);
 
-  // If fonts are still loading or there's an error, render nothing.
   if (!loaded && !error) {
     return null;
   }
 
-  const validatePassword = () => {
-    let newSuggestions = [];
-    if (getPassword.length < 8) {
-        return 'Password should be at least 8 characters long'
-    }
-    if (!/\d/.test(getPassword)) {
-        return ('Add at least one number')
-    }
-
-    if (!/[A-Z]/.test(getPassword) || !/[a-z]/.test(getPassword)) {
-        return ('Include both upper and lower case letters')
-    }
-
-    if (!/[^A-Za-z0-9]/.test(getPassword)) {
-        return ('Include at least one special character')
-    }
-    return '';
-}
-
-  // Function to handle user sign-in when the "Sign In" button is pressed.
-  const handleSignIn = async () => {
-    if (isSubmitting) return; // Prevent multiple requests while already submitting.
-
-    if (validatePassword()) {
-      setPasswordWarning(validatePassword())
-      return;
-    }
-
-    setIsSubmitting(true); // Mark that submission is in progress.
-
+  const handleSignIn = async (values, { setSubmitting }) => {
+    setSubmitting(true);
     try {
-      // Send a POST request to the sign-in API.
       let response = await fetch(
-        "http://192.168.1.5:8080/Umee_Chat_App/SignIn",
+        "http://192.168.1.4:8080/Umee_Chat_App/SignIn",
         {
           method: "POST",
           body: JSON.stringify({
-              mobile: getMobile,
-              password: getPassword,
+            mobile: values.mobile,
+            password: values.password,
           }),
           headers: {
             "Content-Type": "application/json",
@@ -135,127 +73,136 @@ export default function index() {
         }
       );
 
-      // If the response is successful, process the result.
       if (response.ok) {
         let json = await response.json();
-        if(json.success){
-          // If user login is successful, store the user data locally.
+        if (json.success) {
           let user = json.user;
           try {
             await AsyncStorage.setItem("user", JSON.stringify(user));
-            router.replace("/home"); // Redirect to home page.
+            router.replace("/home");
           } catch (error) {
             Alert.alert("Error", "Unable to process your request.");
           }
         } else {
-          // Display an error if login failed.
           Alert.alert("Error", json.message);
         }
-      } 
+      }
     } catch (error) {
       Alert.alert("Error", "Something went wrong. Please try again.");
     } finally {
-      setIsSubmitting(false); // End submission after the request completes.
+      setSubmitting(false);
     }
   };
 
-  // Main UI of the login screen.
   return (
     <SafeAreaView style={stylesheet.view1}>
       <ScrollView style={stylesheet.scrollview1}>
         <View style={stylesheet.View3}>
-          {/* Display the logo image */}
           <Image
             source={logoImagePath}
             style={stylesheet.image1}
             contentFit={"contain"}
           />
 
-          {/* Display the login title and subtitle */}
           <Text style={stylesheet.text1}>Let's Log In</Text>
           <Text style={stylesheet.text2}>
             Hello! Welcome to UMee Chat. Please fill your details to Log In.
           </Text>
 
-          {/* Display the user's name */}
           <View style={stylesheet.button3}>
             <Text style={stylesheet.text5}>{getName}</Text>
           </View>
 
-          {/* Input field for the mobile number */}
-          <Text style={stylesheet.text3}>Mobile</Text>
-          <TextInput
-            style={stylesheet.input1}
-            placeholderTextColor={"black"}
-            placeholder="Enter Mobile No"
-            inputMode={"tel"}
-            maxLength={10}
-            onChangeText={(text) => {
-              setMobile(text);
-            }}
-            onEndEditing={async () => {
-              if (getMobile.length == 10) {
-                let response = await fetch(
-                  "http://192.168.1.5:8080/Umee_Chat_App/GetLetters?mobile=" +
-                    getMobile
-                );
-
-                if (response.ok) {
-                  let json = await response.json();
-                  setName(json.letters); // Set name based on the mobile number response.
-                }
-              }
-            }}
-          />
-
-          {/* Input field for the password */}
-          <View>
-          <Text style={stylesheet.text3}>Password</Text>
-          <TextInput
-            style={stylesheet.input1}
-            placeholderTextColor={"black"}
-            placeholder="Enter Password"
-            secureTextEntry={true}
-            inputMode={"text"}
-            onChangeText={(text) => {
-              setPassword(text);
-              setPasswordWarning('');
-            }}
-          />
-          {passwordWarning ? (
-              <Text style={{ color: 'red', marginTop: 5 }}>{passwordWarning}</Text>
-            ) : null}
-          </View>
-
-                 {/* Button to trigger the sign-in process */}
-                 <Pressable
-            style={[
-              stylesheet.button1,
-              isSubmitting && { backgroundColor: "#ccc" }, // Change button style when submitting.
-            ]}
-            onPress={handleSignIn}
-            disabled={isSubmitting} // Disable button while submitting.
+          <Formik
+            initialValues={{ mobile: "", password: "" }}
+            validationSchema={validationSchema}
+            onSubmit={handleSignIn}
           >
-            {isSubmitting ? (
-              <ActivityIndicator color="white" /> // Show spinner when submitting
-            ) : (
+            {({
+              handleChange,
+              handleSubmit,
+              values,
+              errors,
+              touched,
+              isSubmitting,
+              setFieldValue,
+              handleBlur,
+            }) => (
               <>
-                <FontAwesome6 name={"paper-plane"} color={"white"} size={20} />
-                <Text style={stylesheet.buttonText1}>Sign In</Text>
+                <Text style={stylesheet.text3}>Mobile</Text>
+                <TextInput
+                  style={stylesheet.input1}
+                  placeholderTextColor={"black"}
+                  placeholder="Enter Mobile No"
+                  inputMode={"tel"}
+                  maxLength={10}
+                  onChangeText={handleChange("mobile")}
+                  onBlur={handleBlur("mobile")}
+                  value={values.mobile}
+                  onEndEditing={async () => {
+                    if (values.mobile.length == 10) {
+                      let response = await fetch(
+                        "http://192.168.1.4:8080/Umee_Chat_App/GetLetters?mobile=" +
+                          values.mobile
+                      );
+
+                      if (response.ok) {
+                        let json = await response.json();
+                        setName(json.letters);
+                      }
+                    }
+                  }}
+                />
+                {touched.mobile && errors.mobile ? (
+                  <Text style={{ color: "red", marginTop: 5 }}>{errors.mobile}</Text>
+                ) : null}
+
+                <View>
+                  <Text style={stylesheet.text3}>Password</Text>
+                  <TextInput
+                    style={stylesheet.input1}
+                    placeholderTextColor={"black"}
+                    placeholder="Enter Password"
+                    secureTextEntry={true}
+                    onChangeText={handleChange("password")}
+                    onBlur={handleBlur("password")}
+                    value={values.password}
+                  />
+                  {touched.password && errors.password ? (
+                    <Text style={{ color: "red", marginTop: 5 }}>
+                      {errors.password}
+                    </Text>
+                  ) : null}
+                </View>
+
+                <Pressable
+                  style={[
+                    stylesheet.button1,
+                    isSubmitting && { backgroundColor: "#ccc" },
+                  ]}
+                  onPress={handleSubmit}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <>
+                      <FontAwesome6 name={"paper-plane"} color={"white"} size={20} />
+                      <Text style={stylesheet.buttonText1}>Sign In</Text>
+                    </>
+                  )}
+                </Pressable>
               </>
             )}
-          </Pressable>
+          </Formik>
 
-          {/* Link to the sign-up page */}
           <Pressable
             style={stylesheet.button2}
             onPress={() => {
               router.replace("/signup");
             }}
           >
-            <Text style={stylesheet.buttonText2}>
-              New User ? Go to Sign Up
-            </Text>
+            <Text style={stylesheet.buttonText2}>New User? Go to Sign Up</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -290,13 +237,6 @@ const stylesheet = StyleSheet.create({
     height: 150,
     alignSelf: "center",
     marginTop: 10,
-  },
-  selectimage: {
-    marginTop: 5,
-    fontSize: 15,
-    color: "#0e66fe",
-    fontWeight: "500",
-    alignSelf: "center",
   },
   text1: {
     fontSize: 28,
