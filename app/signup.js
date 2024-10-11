@@ -1,46 +1,56 @@
+import React from "react";
 import {
   Alert,
-  Pressable,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
+  Pressable,
+  ActivityIndicator,
   View,
-  ActivityIndicator
 } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
-import { useEffect, useState } from "react";
-import { FontAwesome6 } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
+import { Formik } from "formik";
+import * as Yup from "yup";
 import { router } from "expo-router";
 
-SplashScreen.preventAutoHideAsync();
+
+// Define the validation schema using Yup
+const SignUpSchema = Yup.object().shape({
+  firstName: Yup.string()
+    .matches(/^[A-Za-z]+$/, "First name should only contain letters")
+    .required("First name is required"),
+  lastName: Yup.string()
+    .matches(/^[A-Za-z]+$/, "Last name should only contain letters")
+    .required("Last name is required"),
+  mobile: Yup.string()
+    .matches(/^07[01245678]{1}[0-9]{7}$/, "Please enter a valid mobile number")
+    .required("Mobile number is required"),
+  password: Yup.string()
+    .min(8, "Password should be at least 8 characters long")
+    .matches(/\d/, "Password must contain at least one number")
+    .matches(/[A-Z]/, "Password must contain an uppercase letter")
+    .matches(/[a-z]/, "Password must contain a lowercase letter")
+    .matches(/[^A-Za-z0-9]/, "Password must contain a special character")
+    .required("Password is required"),
+});
 
 const logoImagePath = require("../assets/image/logo.png");
 
-export default function signup() {
+export default function Signup() {
   const [loaded, error] = useFonts({
     "Poppins-Bold": require("../assets/fonts/Poppins-Bold.ttf"),
     "Poppins-Light": require("../assets/fonts/Poppins-Light.ttf"),
   });
 
-  const defaultImagePath = require("../assets/image/user.png"); // Default image path
-  const [getImage, setImage] = useState(defaultImagePath); // Initialize with default image
+  const defaultImagePath = require("../assets/image/user.png");
+  const [getImage, setImage] = React.useState(defaultImagePath);
 
-  const [getMobile, setMobile] = useState("");
-  const [getFirstName, setFirstName] = useState("");
-  const [getFirstNameWarning, setFirstNameWarning] = useState("");
-  const [getLastName, setLastName] = useState("");
-  const [getLastNameWarning, setLastNameWarning] = useState("");
-  const [getPassword, setPassword] = useState("");
-  const [passwordWarning, setPasswordWarning] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false); // Track submission state
-
-  useEffect(() => {
+  React.useEffect(() => {
     if (loaded || error) {
       SplashScreen.hideAsync();
     }
@@ -50,57 +60,43 @@ export default function signup() {
     return null;
   }
 
-  const validatePassword = () => {
-    let newSuggestions = [];
-    if (getPassword.length < 8) {
-      return 'Password should be at least 8 characters long'
+  const handleImagePicker = async (setFieldValue) => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 4],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setFieldValue("profileImage", result.assets[0].uri);
+      setImage(result.assets[0].uri);
     }
-    if (!/\d/.test(getPassword)) {
-      return ('Add at least one number')
-    }
+  };
 
-    if (!/[A-Z]/.test(getPassword) || !/[a-z]/.test(getPassword)) {
-      return ('Include both upper and lower case letters')
-    }
+  const handleSubmit = async (values, { setSubmitting }) => {
+    setSubmitting(true);
 
-    if (!/[^A-Za-z0-9]/.test(getPassword)) {
-      return ('Include at least one special character')
-    }
-    return '';
-  }
+    let formData = new FormData();
+    formData.append("mobile", values.mobile);
+    formData.append("firstName", values.firstName);
+    formData.append("lastName", values.lastName);
+    formData.append("password", values.password);
 
-  const handleSignUp = async () => {
-    if (isSubmitting) return; // Prevent multiple requests
-
-
-    let f = new FormData();
-
-    f.append("mobile", getMobile);
-    f.append("firstName", getFirstName);
-    f.append("lastName", getLastName);
-    f.append("password", getPassword);
-
-    if (getImage !== defaultImagePath) {
-      f.append("profileImage", {
+    if (values.profileImage) {
+      formData.append("profileImage", {
         name: "profile.jpg",
         type: "image/jpg",
-        uri: getImage,
+        uri: values.profileImage,
       });
     }
 
-    if (validatePassword()) {
-      setPasswordWarning(validatePassword())
-      return;
-    }
-
-    setIsSubmitting(true); // Start submission
-
     try {
       let response = await fetch(
-        "http://192.168.1.5:8080/Umee_Chat_App/SignUp",
+        "http://192.168.1.4:8080/Umee_Chat_App/SignUp",
         {
           method: "POST",
-          body: f,
+          body: formData,
         }
       );
 
@@ -116,7 +112,7 @@ export default function signup() {
     } catch (error) {
       Alert.alert("Error", "Something went wrong. Please try again.");
     } finally {
-      setIsSubmitting(false); // End submission
+      setSubmitting(false);
     }
   };
 
@@ -131,113 +127,109 @@ export default function signup() {
           />
 
           <Text style={stylesheet.text1}>Create Account</Text>
-          <Text style={stylesheet.text2}>
-            Hello! Welcome to UMee Chat. Please fill your details to Create New
-            Account.
-          </Text>
 
-          <Pressable
-            style={stylesheet.button3}
-            onPress={async () => {
-              let result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                allowsEditing: true,
-                aspect: [4, 4],
-                quality: 1,
-              });
-
-              if (!result.canceled) {
-                setImage(result.assets[0].uri);
-              }
+          <Formik
+            initialValues={{
+              firstName: "",
+              lastName: "",
+              mobile: "",
+              password: "",
+              profileImage: "",
             }}
+            validationSchema={SignUpSchema}
+            onSubmit={handleSubmit}
           >
-            <Image
-              source={getImage}
-              style={stylesheet.button3}
-              contentFit={"contain"}
-            />
-          </Pressable>
-          <Text style={stylesheet.selectimage}>Select Image</Text>
-
-          <Text style={stylesheet.text3}>Mobile</Text>
-          <TextInput
-            style={stylesheet.input1}
-            placeholderTextColor={"black"}
-            placeholder="Enter Mobile No"
-            inputMode={"tel"}
-            maxLength={10}
-            onChangeText={(text) => {
-              setMobile(text);
-            }}
-          />
-
-          <View>
-            <Text style={stylesheet.text3}>First Name</Text>
-            <TextInput
-              style={stylesheet.input1}
-              placeholderTextColor={"black"}
-              placeholder="Enter First Name"
-              inputMode={"text"}
-              onChangeText={(text) => {
-                setFirstName(text);
-              }}
-            />
-            {getFirstNameWarning ? (
-              <Text style={{ color: 'red', marginTop: 1 }}>{getFirstNameWarning}</Text>
-            ) : null}
-          </View>
-
-          <View>
-            <Text style={stylesheet.text3}>Last Name</Text>
-            <TextInput
-              style={stylesheet.input1}
-              placeholderTextColor={"black"}
-              placeholder="Enter Last Name"
-              inputMode={"text"}
-              onChangeText={(text) => {
-                setLastName(text);
-              }}
-            />
-            {getLastNameWarning ? (
-              <Text style={{ color: 'red', marginTop: 1 }}>{getLastNameWarning}</Text>
-            ) : null}
-          </View>
-
-          <View>
-            <Text style={stylesheet.text3}>Password</Text>
-            <TextInput
-              style={stylesheet.input1}
-              placeholderTextColor={"black"}
-              placeholder="Enter Password"
-              secureTextEntry={true}
-              inputMode={"text"}
-              onChangeText={(text) => {
-                setPassword(text);
-                setPasswordWarning('');
-              }}
-            />
-            {passwordWarning ? (
-              <Text style={{ color: 'red', marginTop: 5 }}>{passwordWarning}</Text>
-            ) : null}
-          </View>
-
-          <Pressable
-            style={[
-              stylesheet.button1,
-              isSubmitting && { backgroundColor: "#ccc" },
-            ]}
-            onPress={handleSignUp}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator size="small" color="white" /> // Show spinner
-            ) : (
+            {({
+              handleChange,
+              handleSubmit,
+              values,
+              errors,
+              touched,
+              isSubmitting,
+              setFieldValue,
+            }) => (
               <>
-                <FontAwesome6 name={"right-to-bracket"} color={"white"} size={20} />
-                <Text style={stylesheet.buttonText1}>Sign Up</Text>
+                <Pressable
+                  style={stylesheet.button3}
+                  onPress={() => handleImagePicker(setFieldValue)}
+                >
+                  <Image
+                    source={getImage}
+                    style={stylesheet.button3}
+                    contentFit={"contain"}
+                  />
+                </Pressable>
+                <Text style={stylesheet.selectimage}>Select Image</Text>
+
+                {/* First Name */}
+                <Text style={stylesheet.text3}>First Name</Text>
+                <TextInput
+                  style={stylesheet.input1}
+                  placeholder="Enter First Name"
+                  value={values.firstName}
+                  onChangeText={handleChange("firstName")}
+                />
+                {errors.firstName && touched.firstName ? (
+                  <Text style={stylesheet.errorText}>{errors.firstName}</Text>
+                ) : null}
+
+                {/* Last Name */}
+                <Text style={stylesheet.text3}>Last Name</Text>
+                <TextInput
+                  style={stylesheet.input1}
+                  placeholder="Enter Last Name"
+                  value={values.lastName}
+                  onChangeText={handleChange("lastName")}
+                />
+                {errors.lastName && touched.lastName ? (
+                  <Text style={stylesheet.errorText}>{errors.lastName}</Text>
+                ) : null}
+
+                {/* Mobile */}
+                <Text style={stylesheet.text3}>Mobile</Text>
+                <TextInput
+                  style={stylesheet.input1}
+                  placeholder="Enter Mobile No"
+                  maxLength={10}
+                  value={values.mobile}
+                  onChangeText={handleChange("mobile")}
+                  keyboardType="numeric"
+                />
+                {errors.mobile && touched.mobile ? (
+                  <Text style={stylesheet.errorText}>{errors.mobile}</Text>
+                ) : null}
+
+                {/* Password */}
+                <Text style={stylesheet.text3}>Password</Text>
+                <TextInput
+                  style={stylesheet.input1}
+                  placeholder="Enter Password"
+                  secureTextEntry
+                  value={values.password}
+                  onChangeText={handleChange("password")}
+                />
+                {errors.password && touched.password ? (
+                  <Text style={stylesheet.errorText}>{errors.password}</Text>
+                ) : null}
+
+                {/* Submit Button */}
+                <Pressable
+                  style={[
+                    stylesheet.button1,
+                    isSubmitting && { backgroundColor: "#ccc" },
+                  ]}
+                  onPress={handleSubmit}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <ActivityIndicator size="small" color="white" />
+                  ) : (
+                    <Text style={stylesheet.buttonText1}>Sign Up</Text>
+                  )}
+                </Pressable>
               </>
             )}
-          </Pressable>
+          </Formik>
 
           <Pressable
             style={stylesheet.button2}
@@ -256,11 +248,7 @@ export default function signup() {
 }
 
 const stylesheet = StyleSheet.create({
-  view1: {
-    flex: 1,
-    justifyContent: "center",
-    backgroundColor: "#f5f7fa",
-  },
+  view1: { flex: 1, justifyContent: "center", backgroundColor: "#f5f7fa" },
   View3: {
     flex: 1,
     paddingHorizontal: 15,
@@ -275,11 +263,7 @@ const stylesheet = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
   },
-  image1: {
-    width: 130,
-    height: 130,
-    alignSelf: "center",
-  },
+  image1: { width: 130, height: 130, alignSelf: "center" },
   selectimage: {
     marginTop: 5,
     fontSize: 15,
@@ -294,13 +278,6 @@ const stylesheet = StyleSheet.create({
     fontFamily: "Poppins-Bold",
     textAlign: "center",
     marginVertical: 15,
-  },
-  text2: {
-    fontSize: 14,
-    fontFamily: "Poppins-Light",
-    color: "#333",
-    textAlign: "center",
-    marginBottom: 15,
   },
   text3: {
     fontSize: 16,
@@ -333,11 +310,7 @@ const stylesheet = StyleSheet.create({
     elevation: 4,
     gap: 10,
   },
-  buttonText1: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "white",
-  },
+  buttonText1: { fontSize: 20, fontWeight: "bold", color: "white" },
   button2: {
     borderColor: "#0e66fe",
     borderWidth: 2,
@@ -349,11 +322,7 @@ const stylesheet = StyleSheet.create({
     marginBottom: 30,
     paddingHorizontal: 16,
   },
-  buttonText2: {
-    fontSize: 15,
-    color: "#0e66fe",
-    fontWeight: "500",
-  },
+  buttonText2: { fontSize: 15, color: "#0e66fe", fontWeight: "500" },
   button3: {
     width: 110,
     height: 110,
@@ -366,4 +335,5 @@ const stylesheet = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: "#ccc",
   },
+  errorText: { color: "red", fontSize: 12, marginTop: 5 },
 });
