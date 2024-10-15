@@ -43,7 +43,7 @@ export default function Chat() {
         const userJson = await AsyncStorage.getItem('user');
         const user = JSON.parse(userJson);
         const response = await fetch(
-          `http://192.168.1.4:8080/Umee_Chat_App/LoadChat?logged_user_id=${user.id}&other_user_id=${item.other_user_id}`
+          process.env.EXPO_PUBLIC_API_URL+`/LoadChat?logged_user_id=${user.id}&other_user_id=${item.other_user_id}`
         );
         if (response.ok) {
           const chatArray = await response.json();
@@ -80,7 +80,7 @@ export default function Chat() {
       const userJson = await AsyncStorage.getItem('user');
       const user = JSON.parse(userJson);
       const response = await fetch(
-        `http://192.168.1.4:8080/Umee_Chat_App/SendChat?logged_user_id=${user.id}&other_user_id=${item.other_user_id}&message=${encodeURIComponent(chatText)}`
+        process.env.EXPO_PUBLIC_API_URL+`/SendChat?logged_user_id=${user.id}&other_user_id=${item.other_user_id}&message=${encodeURIComponent(chatText)}`
       );
 
       if (response.ok) {
@@ -140,7 +140,7 @@ export default function Chat() {
           {item.avatar_image_found === 'true' ? (
             <Image
               style={styles.avatar}
-              source={`http://192.168.1.4:8080/Umee_Chat_App/AvatarImages/${item.other_user_mobile}.jpg`}
+              source={process.env.EXPO_PUBLIC_API_URL+`/AvatarImages/${item.other_user_mobile}.jpg`}
               contentFit="cover"
             />
           ) : (
