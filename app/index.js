@@ -60,7 +60,7 @@ export default function index() {
     setSubmitting(true);
     try {
       let response = await fetch(
-        "http://192.168.1.4:8080/Umee_Chat_App/SignIn",
+        process.env.EXPO_PUBLIC_API_URL+"/SignIn",
         {
           method: "POST",
           body: JSON.stringify({
@@ -142,7 +142,7 @@ export default function index() {
                   onEndEditing={async () => {
                     if (values.mobile.length == 10) {
                       let response = await fetch(
-                        "http://192.168.1.4:8080/Umee_Chat_App/GetLetters?mobile=" +
+                        process.env.EXPO_PUBLIC_API_URL+"/GetLetters?mobile=" +
                           values.mobile
                       );
 

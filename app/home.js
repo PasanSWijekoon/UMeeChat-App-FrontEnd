@@ -38,7 +38,7 @@ export default function Home() {
         const user = JSON.parse(userJson);
         setCurrentUser(user);
         const response = await fetch(
-          `http://192.168.1.4:8080/Umee_Chat_App/LoadHomeData?id=${user.id}`
+          process.env.EXPO_PUBLIC_API_URL+`/LoadHomeData?id=${user.id}`
         );
 
         if (response.ok) {
@@ -81,7 +81,7 @@ export default function Home() {
       >
         {item.avatar_image_found ? (
           <Image
-            source={`http://192.168.1.4:8080/Umee_Chat_App/AvatarImages/${item.other_user_mobile}.jpg`}
+            source={process.env.EXPO_PUBLIC_API_URL+`/AvatarImages/${item.other_user_mobile}.jpg`}
             contentFit="cover"
             style={styles.avatar}
           />
@@ -112,7 +112,7 @@ export default function Home() {
             <View style={styles.userAvatarContainer}>
               {currentUser?.avatar_found ? (
                 <Image
-                  source={`http://192.168.1.4:8080/Umee_Chat_App/AvatarImages/0775512786.jpg`}
+                  source={process.env.EXPO_PUBLIC_API_URL+`/AvatarImages/0775512786.jpg`}
                   contentFit="cover"
                   style={styles.userAvatar}
                 />

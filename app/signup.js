@@ -112,7 +112,7 @@ export default function Signup() {
 
     try {
       let response = await fetch(
-        "http://192.168.1.4:8080/Umee_Chat_App/SignUp",
+        process.env.EXPO_PUBLIC_API_URL+"/SignUp",
         {
           method: "POST",
           body: formData,
